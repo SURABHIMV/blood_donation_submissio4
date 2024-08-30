@@ -1,0 +1,42 @@
+{% extends "adminn/base.html" %}
+
+{% block content %}
+<div class="container mt-4 pt-4">
+  <div class="dashboard-content">
+      <!-- Your dashboard content goes here -->
+      <h2>Welcome to the Dashboard</h2>
+      <!-- Add your specific dashboard content here -->
+  </div>
+  
+  <div class="container mt-4 pt-4">
+    <div class="row">
+        <!-- Card 1 -->
+        <div class="col-md-4 mb-4 stretch-card">
+            <a href="{% url 'patients' %}" class="card-link text-decoration-none">
+                <div class="card bg-secondary text-white">
+                    <div class="card-body text-center">
+                        <p class="mb-4 fs-4">Total Patients</p>
+                        <p class="fs-3 mb-0">{{ patient_count }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="col-md-4 mb-4 stretch-card">
+            <a href="{% url 'donars' %}" class="card-link text-decoration-none">
+                <div class="card bg-secondary text-white">
+                    <div class="card-body text-center">
+                        <p class="mb-4 fs-4">Total Donors</p>
+                        <p class="fs-3 mb-0">{{ donar_count }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+

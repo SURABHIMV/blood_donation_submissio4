@@ -1,0 +1,24 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+  .icon-hover:hover {
+    border-color: #3b71ca !important;
+    background-color: white !important;
+  }
+
+  .icon-hover:hover i {
+    color: #3b71ca !important;
+  }
+  .modal-body {
+        max-height: calc(100vh - 200px); /* Adjust as needed */
+        overflow-y: auto;
+    }
+</style>
+<div class="container mt-4 pt-4">
+  <div class="dashboard-content">
+    <h2>Welcome</h2>
+  </div>
+</div>
+{% endblock %}

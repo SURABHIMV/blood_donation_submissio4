@@ -1,0 +1,303 @@
+{% extends "adminn/base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+  .icon-hover:hover {
+    border-color: #3b71ca !important;
+    background-color: white !important;
+  }
+
+  .icon-hover:hover i {
+    color: #3b71ca !important;
+  }
+  .modal-body {
+        max-height: calc(100vh - 200px); /* Adjust as needed */
+        overflow-y: auto;
+    }
+  .card-footer {
+          background-color: #eef2f7;  /* Blue background color */
+          color: white;               /* White text color */
+          padding: 15px;              /* Padding for some space around content */
+          border-radius: 8px;         /* Rounded corners */
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+      }
+
+      /* Styling the select dropdown */
+      .card-footer select {
+          width: 150px;               /* Adjust the width */
+          padding: 8px;               /* Add some padding inside the dropdown */
+          border: none;               /* Remove border */
+          border-radius: 4px;         /* Rounded corners */
+          background-color: white;    /* Background color for select box */
+          color: #007bff;             /* Blue text color */
+          font-size: 16px;            /* Increase font size */
+      }
+
+      /* Add some hover effect for the dropdown */
+      .card-footer select:hover {
+          background-color: #e6f0ff;  /* Light blue background on hover */
+      }
+</style>
+<div class="container mt-4 pt-4">
+  <div class="dashboard-content">
+    <h2>Welcome to the Donars</h2>
+  </div>
+
+  <section class="">
+    <div class="container" id="donar">
+      <header class="d-sm-flex align-items-center border-bottom mb-3 pb-3 justify-content-between">
+        <div class="col-lg-8">
+        </div>
+        <div class="col-lg-4 d-flex justify-content-end">
+          <!-- Button aligned to the right -->
+          <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#create_donar" >create</button> <!-- Add your button here -->
+        </div>
+      </header>
+
+      <div class="row">
+        {% for i in data %}
+        <div class="col-lg-4 col-md-6 col-sm-6 d-flex">
+          <div class="card w-100 my-2 shadow-2-strong">
+            <img src="{{ i.image.url }}" class="card-img-top" onclick="donar_data('{{i.id}}')" />
+
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex flex-row">
+                <h5 class="mb-1 me-1"> {{i.name}}</h5>
+              </div>
+              <div class="d-flex flex-row">
+                Blood_type: {{ i.blood_type }}
+              </div>
+              <div class="d-flex flex-row">
+                Doctor_status: {{ i.overall_health }}
+              </div>
+            
+              <div class="card-footer d-flex align-items-end pt-3 px-0 pb-0 mt-auto">
+                <select id="{{ i.id }}" onchange="change_status(this)">
+                  <option value="">Status</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+        <hr />
+        <!-- Pagination -->
+        <nav aria-label="Page navigation example" class="d-flex justify-content-center mt-3">
+          <ul class="pagination">
+            <li class="page-item disabled">
+              <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#">4</a></li>
+            <li class="page-item"><a class="page-link" href="#">5</a></li>
+            <li class="page-item">
+              <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <!-- Pagination -->
+      </div>
+    </div>
+  </section>
+  <div id="donar_details_div"></div>
+  <script src="{% static 'admin/custom/custom.js' %}"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  
+  <div class="modal fade" id="create_donar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Create Donor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="" method="post" class="login-form" id="donar_form">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="name">Name</label>
+                        <input type="text" name="name" class="form-control" id="name" placeholder="Name" autocomplete="off">
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                      <label for="nationality">Nationality</label>
+                      <input type="text" name="nationality" list="nationality_list" class="form-control" autocomplete="off">
+                      <datalist id="nationality_list">
+                          <option value="Indian">
+                          <option value="Others">
+                      </datalist>
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="phone">Phone</label>
+                      <input type="text" name="phone" class="form-control" id="phone" placeholder="Phone" autocomplete="off">
+                    
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="age">Age</label>
+                      <input type="text" name="age" class="form-control" id="age" placeholder="Age" autocomplete="off">
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="sex">Sex</label>
+                      <input type="text" name="sex" list="sex_list" class="form-control" autocomplete="off" >
+                      <datalist id="sex_list">
+                        <option value="Female">
+                        <option value="Male">
+                        <option value="Others">
+                    </datalist>
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="email">Email</label>
+                      <input type="email" name="email" class="form-control" id="email" placeholder="Email" autocomplete="off">
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="address">Address</label>
+                      <input type="text" name="address" class="form-control" id="address" placeholder="Address" autocomplete="off">
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="date_of_donation">Date of Donation</label>
+                      <input type="date" name="date_of_donation" class="form-control" id="date_of_donation" placeholder="Date of Donation" autocomplete="off">
+                    </div>
+                     
+                    <div class="form-group mb-3">
+                      <label for="date_of_donation">Last Date of Donation</label>
+                      <input type="date" name="last_date_of_donation" class="form-control" id="last_date_of_donation" placeholder="last_Date of Donation" autocomplete="off">
+                    </div>
+
+
+                    <div class="form-group mb-3">
+                      <label for="blood_type">Blood Type</label>
+                      <input type="text" name="blood_type" list="blood_type_list" class="form-control" autocomplete="off">
+                      <datalist id="blood_type_list">
+                        <option value="O+">
+                        <option value="O-">
+                        <option value="B+">
+                        <option value="B-">
+                        <option value="A+">
+                        <option value="A-">
+                        <option value="AB+">
+                        <option value="AB-">
+                    </datalist>                 
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="donation">Donation</label>
+                      <input type="text" name="donation" list="donation_list" class="form-control" autocomplete="off">
+                      <datalist id="donation_list">
+                        <option value="Whole blood">
+                        <option value="Red cell">
+                        <option value="plasma">
+                        <option value="platelate">
+  
+                    </datalist> 
+                    </div>
+                   
+                    <div class="form-group mb-3">
+                      <label for="donar_status">Donor Status</label>
+                      <input type="text" name="donar_status" list="donar_status_list" class="form-control" autocomplete="off">
+                      <datalist id="donar_status_list">
+                        <option value="Accepted">
+                        <option value="Rejected">
+                        <option value="Pending">
+                    </datalist>                   
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="volume">Volume</label>
+                      <input type="text" name="volume" class="form-control" id="volume" placeholder="Volume" autocomplete="off">
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="hemoglobin">Hemoglobin</label>
+                      <input type="text" name="hemoglobin" class="form-control" id="hemoglobin" placeholder="Hemoglobin" autocomplete="off">
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="weight">Weight</label>
+                      <input type="text" name="weight" class="form-control" id="weight" placeholder="Weight" autocomplete="off">
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label for="medical_history">Medical History</label>
+                      <input type="text" name="medical_history" class="form-control" id="medical_history" placeholder="Medical History" autocomplete="off">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="overall_health">Overall Health</label>
+                        <input type="text" name="overall_health" list="overall_health_list" class="form-control" autocomplete="off">
+                        <datalist id="overall_health_list">
+                          <option value="good">
+                          <option value="best">
+                          <option value="need improvement">
+                      </datalist> 
+                      </div>
+
+                    <div class="form-group mb-3">
+                        <label>Image Upload</label>
+                        <input type="file" name="image" class="file-upload-default">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" onclick="create_submit()" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Ensure jQuery is loaded -->
+<script>
+  $(document).ready(function(){
+    $('.file-upload-default').on('change', function(){
+      console.log('Image input changed')
+      $('#ss').val($(this).val().replace(/C:\\fakepath\\/i, ''))
+    });
+  });
+</script>
+
+<script>
+  function change_status(selectObject) {
+  var value = selectObject.value;  
+  var id= selectObject.getAttribute('id'); 
+  var url ="status";
+            $.ajax({
+            url: url,
+            data: {
+              'value': value,
+              'id':id
+            },
+
+            success: function(data) {
+            status = data['status']
+            message = data['message']
+            
+            console.log('kkkkkkkkkkk')
+            console.log('jjjjjjjjjjjjjjjjjjjjjjjjjjjj')
+            
+        } 
+          });
+    }
+</script>
+</div>
+{% endblock %}

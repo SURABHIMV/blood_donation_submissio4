@@ -13,6 +13,9 @@ urlpatterns = [
     path('patient/',views.patientss,name='patients'),
     path('donar/view_donar/',views.view_donarr,name='view_donar'),
     path('donar/create_donar',views.create_donar,name='create_donar'),
-    path('donar/status',views.status,name='status')
+    path('donar/status',views.status,name='status'),
+    path('homee/',views.homee,name='homee'),
+    path('donar/edit_donar',views.edit_donar,name='edit_donar'),
+    path('donar/edit_donar_actionn',views.edit_donar_actionn,name='edit_donar_action')
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

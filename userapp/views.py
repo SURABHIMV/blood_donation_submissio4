@@ -7,6 +7,11 @@ from django.contrib.auth import logout
 import sweetify
 from django.contrib import messages
 from django.core.mail import send_mail
+from django.contrib.auth.decorators import login_required 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.core.mail import EmailMultiAlternatives
 # Create your views here.
 def user_signup(request):
     if request.method == "POST":
@@ -39,6 +44,7 @@ def user_signup(request):
     
     return render(request,"users/signup.html")
 
+
 def user_login(request):
     if request.method == "POST":
             name = request.POST.get("name")
@@ -53,7 +59,7 @@ def user_login(request):
                sweetify.error(request, 'Enter valid username and password')     
     return render(request,"users/login.html")
 
-
+@login_required(login_url='user_login')
 def view_u(request):
     
     id = request.GET.get("id")
@@ -70,9 +76,11 @@ def view_u(request):
     rendered_template = template.render(context, request)
     return JsonResponse({"rendered_template":rendered_template})
 
+@login_required(login_url='user_login')
 def new_patient(request):
     return render(request,"users/home.html")
 
+@login_required(login_url='user_login')
 def dashboardd(request):
     user = request.user
     if user.is_authenticated:
@@ -86,18 +94,14 @@ def dashboardd(request):
                 d="O-"
                 blood_types = [a, b, c, d]
                 nam=Donar.objects.filter(blood_type__in=blood_types)
-                context={
-                        'data':nam
-                }
+               
                 
        elif b_type=="A-":
             a="A-"
             b="O-"
             blood_types = [a, b]
             nam=Donar.objects.filter(blood_type__in=blood_types)
-            context={
-                        'data':nam
-                }
+            
             
        elif b_type=="B+":
             a="B+"
@@ -106,35 +110,27 @@ def dashboardd(request):
             d="O-"
             blood_types = [a,b,c,d]
             nam=Donar.objects.filter(blood_type__in=blood_types)
-            context={
-                        'data':nam
-                }
+            
             
        elif b_type=="B-":
             a="B-"
             b="O-"
             blood_types = [a,b]
             nam=Donar.objects.filter(blood_type__in=blood_types)
-            context={
-                        'data':nam
-                }
+            
             
        elif b_type=="O+":
             a="O+"
             b="O-"
             blood_types = [a,b]
             nam=Donar.objects.filter(blood_type__in=blood_types)
-            context={
-                        'data':nam
-                }
+            
             
        elif b_type=="O-":
             a="O-"
             blood_types = [a]
             nam=Donar.objects.filter(blood_type__in=blood_types)
-            context={
-                        'data':nam
-                }
+            
             
        elif b_type=="AB+":
             a="A+"
@@ -147,9 +143,7 @@ def dashboardd(request):
             h="AB-"
             blood_types = [a,b,c,d,e,f,g,h]
             nam=Donar.objects.filter(blood_type__in=blood_types)
-            context={
-                        'data':nam
-                }
+            
         
        elif b_type=="AB-":
             a="AB-"
@@ -158,13 +152,24 @@ def dashboardd(request):
             d="O-"
             blood_types = [a,b,c,d]
             nam=Donar.objects.filter(blood_type__in=blood_types)
-            context={
+       paginator = Paginator(nam, 3)
+       page = request.GET.get('page', 1)
+       try:
+         nam = paginator.page(page)
+       except PageNotAnInteger:
+         nam = paginator.page(1)
+       except EmptyPage:
+         nam = paginator.page(paginator.num_pages)
+     
+       context={
                 'data':nam
                 }
         
     return render(request,"users/u_dashboard.html",context)
 
+@login_required(login_url='user_login')
 def add_mail(request):
+     context = {}
      id = request.GET.get("id")
 
      user = request.user
@@ -191,13 +196,17 @@ def add_mail(request):
          address=donar.address
          date_of_donation=donar.date_of_donation
 
-
+     context['data']=nam
      from_email = "<surabhi2996@gmail.com>"
      if name and email:
             subject = "Urgent need of blood"
-            message = f"Are you willing for blood donation \n patient details \n\n patieint_Name: {p_name} \n patient_blood_type: {p_blood} \n patient_age: {p_sex} \n patient_address: {p_address} \n patient_phone: {p_phone}\n"
+            html_message = render_to_string('users/mail_template.html',context)
+            plain_message = strip_tags(html_message)
             to_email = [email]
-            send_mail(subject, message, from_email, to_email)
+            msg = EmailMultiAlternatives(subject, plain_message, from_email, to_email)
+            msg.attach_alternative(html_message, "text/html")
+            msg.send()
+          #   send_mail(subject, plain_message, from_email, to_email)
             messages.info(request, "Your Request Shared Successfully")
      else:
             messages.info(request, "something went wrong")
@@ -216,7 +225,11 @@ def add_mail(request):
             messages.info(request, "something went wrong")
      return JsonResponse(context)
 
-     
+@login_required(login_url='user_login')
+def mail(request):
+    return render(request,"users/mail_template.html")
+
+@login_required(login_url='user_login')   
 def logout_adminn(request):
    logout(request)     
    return redirect('user_login') 

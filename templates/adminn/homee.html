@@ -1,4 +1,4 @@
-{% extends "users/base.html" %}
+{% extends "adminn/base.html" %}
 {% load static %}
 {% block content %}
 
@@ -24,18 +24,16 @@
   }
 
   .dashboard-content img {
-    width: 80%; /* Adjust width as needed */
-    max-width: 80%; /* Ensure it doesn't exceed container size */
+    width: 50%; /* Make image span the full width of the container */
+    max-width: 50%; /* Ensure it doesn't exceed container size */
     height: auto; /* Keep the image aspect ratio */
-    border-radius: 50%; /* Make image circular */
-    object-fit: cover; /* Ensure the image covers the container, useful for circular images */
   }
 </style>
 
-<div class="container-fluid mt-4 pt-4">
+<div class="container-fluid mt-4 pt-4"> <!-- Use container-fluid for full-width layout -->
   <div class="dashboard-content">
     <h2>Welcome</h2>
-    <img src="../media/images (3).jpeg" alt="Welcome Image" class="img-fluid" />
+    <img src="../media/blood.jpg" alt="Welcome Image" class="img-fluid" />
   </div>
 </div>
 {% endblock %}

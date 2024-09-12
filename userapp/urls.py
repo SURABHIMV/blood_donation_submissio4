@@ -11,6 +11,8 @@ urlpatterns = [
     path('home/',views.new_patient,name='home'),
     path('u_dashboard/view_u/',views.view_u,name='view_u'),
     path('user_logout/',views.logout_adminn,name='user_logout'),
-    path('u_dashboard/addmail',views.add_mail,name='addmail')
+    path('u_dashboard/addmail',views.add_mail,name='addmail'),
+    path('u_dashboard/mail',views.mail,name='mail')
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

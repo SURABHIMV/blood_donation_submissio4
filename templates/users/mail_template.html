@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Donation Request</title>
+</head>
+<style>
+    .submit-button {
+        background-color: red;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    
+    .submit-button:hover {
+        background-color: darkred;
+    }
+</style>
+<body>
+    <h2>Are you willing for blood donation??</h2>
+    <h3>Patient Details</h3>
+    <p><strong>Patient Name:</strong> {{data.username}}</p>
+    <p><strong>Patient Blood Type:</strong> {{data.blood_type}}</p>
+    <p><strong>Patient Age:</strong> {{data.age}}</p>
+    <p><strong>Patient Address:</strong> {{data.address}}</p>
+    <p><strong>Patient Phone:</strong> {{data.phone}}</p>
+    <a href="http://127.0.0.1:6655/main-admin/" class="button-link">Submit</a>
+</body>
+</html>
+
+

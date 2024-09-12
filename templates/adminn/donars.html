@@ -72,12 +72,16 @@
                 Doctor_status: {{ i.overall_health }}
               </div>
             
-              <div class="card-footer d-flex align-items-end pt-3 px-0 pb-0 mt-auto">
-                <select id="{{ i.id }}" onchange="change_status(this)">
-                  <option value="">Status</option>
-                  <option value="Accepted">Accepted</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
+              <div class="card-footer d-flex align-items-center pt-3 px-0 pb-0 mt-auto">
+                <div class="d-flex flex-grow-1 me-3">
+                  <select id="{{ i.id }}" onchange="change_status(this)" class="form-select">
+                    <option value="">Enter Status</option>
+                    <option value="Accepted">Accepted</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </div>
+                <!-- Edit Button separated from status -->
+                <button class="btn btn-sm btn-success" onclick="edit_entry('{{ i.id }}')">Edit</button>
               </div>
             </div>
           </div>
@@ -88,32 +92,51 @@
         <!-- Pagination -->
         <nav aria-label="Page navigation example" class="d-flex justify-content-center mt-3">
           <ul class="pagination">
-            <li class="page-item disabled">
-              <a class="page-link" href="#" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item"><a class="page-link" href="#">4</a></li>
-            <li class="page-item"><a class="page-link" href="#">5</a></li>
-            <li class="page-item">
-              <a class="page-link" href="#" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
+              {% if data.has_previous %}
+              <li class="page-item">
+                  <a class="page-link" href="?page={{ data.previous_page_number }}" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                  </a>
+              </li>
+              {% else %}
+              <li class="page-item disabled">
+                  <a class="page-link" href="#" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                  </a>
+              </li>
+              {% endif %}
+      
+              <!-- Page numbers -->
+              {% for page_num in data.paginator.page_range %}
+              {% if page_num == data.number %}
+              <li class="page-item active"><a class="page-link" href="#">{{ page_num }}</a></li>
+              {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+              {% endif %}
+              {% endfor %}
+      
+              {% if data.has_next %}
+              <li class="page-item">
+                  <a class="page-link" href="?page={{ data.next_page_number }}" aria-label="Next">
+                      <span aria-hidden="true">&raquo;</span>
+                  </a>
+              </li>
+              {% else %}
+              <li class="page-item disabled">
+                  <a class="page-link" href="#" aria-label="Next">
+                      <span aria-hidden="true">&raquo;</span>
+                  </a>
+              </li>
+              {% endif %}
           </ul>
-        </nav>
+      </nav>
         <!-- Pagination -->
       </div>
     </div>
   </section>
   <div id="donar_details_div"></div>
-  <script src="{% static 'admin/custom/custom.js' %}"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <div id="edit_donar_details_div"></div>
 
-  
   <div class="modal fade" id="create_donar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -127,62 +150,72 @@
                     <div class="form-group mb-3">
                         <label for="name">Name</label>
                         <input type="text" name="name" class="form-control" id="name" placeholder="Name" autocomplete="off">
+                        <span id="error-name" class="error-message" style="color: red;"></span>
                     </div>
                     
                     <div class="form-group mb-3">
                       <label for="nationality">Nationality</label>
-                      <input type="text" name="nationality" list="nationality_list" class="form-control" autocomplete="off">
+                      <input type="text" name="nationality" list="nationality_list" id="nationality" class="form-control" autocomplete="off">
                       <datalist id="nationality_list">
                           <option value="Indian">
                           <option value="Others">
                       </datalist>
+                      <span id="error-nationality" class="error-message" style="color: red;"></span>
                     </div>
 
                     <div class="form-group mb-3">
                       <label for="phone">Phone</label>
                       <input type="text" name="phone" class="form-control" id="phone" placeholder="Phone" autocomplete="off">
-                    
+                      <span id="error-phone" class="error-message" style="color: red;"></span>
                     </div>
 
                     <div class="form-group mb-3">
                       <label for="age">Age</label>
                       <input type="text" name="age" class="form-control" id="age" placeholder="Age" autocomplete="off">
+                      <span id="error-age" class="error-message" style="color: red;"></span>
                     </div>
 
                     <div class="form-group mb-3">
                       <label for="sex">Sex</label>
-                      <input type="text" name="sex" list="sex_list" class="form-control" autocomplete="off" >
+                      <input type="text" name="sex" list="sex_list" id="sex" class="form-control" autocomplete="off">
+                     
                       <datalist id="sex_list">
                         <option value="Female">
                         <option value="Male">
                         <option value="Others">
                     </datalist>
+                    <span id="error-sex" class="error-message" style="color: red;"></span>
                     </div>
 
                     <div class="form-group mb-3">
                       <label for="email">Email</label>
                       <input type="email" name="email" class="form-control" id="email" placeholder="Email" autocomplete="off">
+                      <span id="error-email" class="error-message" style="color: red;"></span>
                     </div>
 
                     <div class="form-group mb-3">
                       <label for="address">Address</label>
                       <input type="text" name="address" class="form-control" id="address" placeholder="Address" autocomplete="off">
+                      <span id="error-address" class="error-message" style="color: red;"></span>
                     </div>
 
                     <div class="form-group mb-3">
                       <label for="date_of_donation">Date of Donation</label>
                       <input type="date" name="date_of_donation" class="form-control" id="date_of_donation" placeholder="Date of Donation" autocomplete="off">
+                      <span id="error-date_of_donation" class="error-message" style="color: red;"></span>
                     </div>
                      
                     <div class="form-group mb-3">
                       <label for="date_of_donation">Last Date of Donation</label>
                       <input type="date" name="last_date_of_donation" class="form-control" id="last_date_of_donation" placeholder="last_Date of Donation" autocomplete="off">
+                      <span id="error-last_date_of_donation" class="error-message" style="color: red;"></span>
                     </div>
 
 
                     <div class="form-group mb-3">
                       <label for="blood_type">Blood Type</label>
-                      <input type="text" name="blood_type" list="blood_type_list" class="form-control" autocomplete="off">
+                      <input type="text" name="blood_type" list="blood_type_list" id="blood_type" class="form-control" autocomplete="off">
+                     
                       <datalist id="blood_type_list">
                         <option value="O+">
                         <option value="O-">
@@ -192,69 +225,79 @@
                         <option value="A-">
                         <option value="AB+">
                         <option value="AB-">
-                    </datalist>                 
+                    </datalist>  
+                    <span id="error-blood-type" class="error-message" style="color: red;"></span>               
                     </div>
 
                     <div class="form-group mb-3">
                       <label for="donation">Donation</label>
-                      <input type="text" name="donation" list="donation_list" class="form-control" autocomplete="off">
+                      <input type="text" name="donation" list="donation_list" id="donation" class="form-control" autocomplete="off">
                       <datalist id="donation_list">
                         <option value="Whole blood">
                         <option value="Red cell">
                         <option value="plasma">
                         <option value="platelate">
-  
                     </datalist> 
+                    <span id="error-donation" class="error-message" style="color: red;"></span>
                     </div>
                    
-                    <div class="form-group mb-3">
+                    <!-- <div class="form-group mb-3">
                       <label for="donar_status">Donor Status</label>
-                      <input type="text" name="donar_status" list="donar_status_list" class="form-control" autocomplete="off">
+                      <input type="text" name="donar_status" list="donar_status_list" id="donar_status" class="form-control" autocomplete="off">
+                      
                       <datalist id="donar_status_list">
                         <option value="Accepted">
                         <option value="Rejected">
                         <option value="Pending">
-                    </datalist>                   
-                    </div>
+                    </datalist>     
+                    <span id="error-donar_status" class="error-message" style="color: red;"></span>              
+                    </div> -->
 
                     <div class="form-group mb-3">
                       <label for="volume">Volume</label>
                       <input type="text" name="volume" class="form-control" id="volume" placeholder="Volume" autocomplete="off">
+                      <span id="error-volume" class="error-message" style="color: red;"></span>
                     </div>
 
                     <div class="form-group mb-3">
                       <label for="hemoglobin">Hemoglobin</label>
                       <input type="text" name="hemoglobin" class="form-control" id="hemoglobin" placeholder="Hemoglobin" autocomplete="off">
+                      <span id="error-hemoglobin" class="error-message" style="color: red;"></span>
                     </div>
 
                     <div class="form-group mb-3">
                       <label for="weight">Weight</label>
                       <input type="text" name="weight" class="form-control" id="weight" placeholder="Weight" autocomplete="off">
+                      <span id="error-weight" class="error-message" style="color: red;"></span>
                     </div>
 
                     <div class="form-group mb-3">
                       <label for="medical_history">Medical History</label>
                       <input type="text" name="medical_history" class="form-control" id="medical_history" placeholder="Medical History" autocomplete="off">
+                      <span id="error-medical_history" class="error-message" style="color: red;"></span>
                     </div>
 
                     <div class="form-group mb-3">
                         <label for="overall_health">Overall Health</label>
-                        <input type="text" name="overall_health" list="overall_health_list" class="form-control" autocomplete="off">
+                        <input type="text" name="overall_health" list="overall_health_list" id="overall_health" class="form-control" autocomplete="off">
+                       
                         <datalist id="overall_health_list">
                           <option value="good">
                           <option value="best">
                           <option value="need improvement">
                       </datalist> 
+                      <span id="error-overall_health" class="error-message" style="color: red;"></span>
                       </div>
 
                     <div class="form-group mb-3">
                         <label>Image Upload</label>
-                        <input type="file" name="image" class="file-upload-default">
+                        <input type="file" name="image" id="image" class="file-upload-default">
+                        <span id="error-image" class="error-message" style="color: red;"></span>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" onclick="create_submit()" class="btn btn-primary">Save changes</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
                 </div>
             </form>
         </div>
@@ -265,8 +308,9 @@
 
 <!-- SweetAlert2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Ensure jQuery is loaded -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'admin/custom/custom.js' %}"></script>
+<!-- Ensure jQuery is loaded -->
 <script>
   $(document).ready(function(){
     $('.file-upload-default').on('change', function(){

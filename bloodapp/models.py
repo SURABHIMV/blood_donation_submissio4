@@ -44,33 +44,32 @@ type_donation=(("Whole blood", "Whole blood"),
                ("platelate","platelate"))
 status= (("Accepted", "Accepted"),
                ("Rejected","Rejected"),
-               ("pending","pending"))
-
+)
 health=(("good","good"),
         ("best","best"),
         ("need improvement","need improvement"))
 
 
 class Donar(models.Model):
-    name= models.CharField(max_length=200, null=True, db_index=True)
+    name= models.CharField(max_length=200, null=True, db_index=True,unique=True)
     image = models.FileField(upload_to="donar_image", null=True, db_index=True)
-    nationality= models.CharField(choices=options, max_length=100)
+    nationality= models.CharField(choices=options, max_length=100,null=True)
     phone = models.BigIntegerField(null=True, db_index=True)
     age= models.IntegerField(null=True, db_index=True)
-    sex= models.CharField(choices=CATEGORY_CHOICES1,max_length=100)
+    sex= models.CharField(choices=CATEGORY_CHOICES1,max_length=100,null=True)
     email = models.CharField(max_length=200, null=True, db_index=True)
     phone = models.BigIntegerField(null=True, db_index=True)
     address= models.TextField(null=True, db_index=True)
-    blood_type= models.CharField(choices=CATEGORY_CHOICES, max_length=10)
+    blood_type= models.CharField(choices=CATEGORY_CHOICES, max_length=10,null=True)
     date_of_donation= models.DateField(null=True)
-    donation= models.CharField(choices=type_donation, max_length=100)
-    donar_status= models.CharField(choices=status, max_length=100)
+    donation= models.CharField(choices=type_donation, max_length=100,null=True)
+    donar_status= models.CharField(choices=status, max_length=100,null=True)
     volume= models.IntegerField(null=True, db_index=True)
     hemoglobin= models.IntegerField(null=True, db_index=True)
     last_donated_date= models.DateField(null=True)
     wieght=models.IntegerField(null=True, db_index=True)
     medical_history= models.TextField(null=True, db_index=True)
-    overall_health= models.CharField(choices=health, max_length=100)
+    overall_health= models.CharField(choices=health, max_length=100,null=True)
 
 
 

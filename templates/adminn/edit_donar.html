@@ -80,11 +80,11 @@
                             <input type="hidden" value="{{data.id}}" name="donar_id">
                             <div class="d-flex align-items-center mb-3">
                                 <label for="Date_of_donation" class="me-3" style="width: 150px;">Date of Donation</label>
-                                <input type="text" value="{{data.date_of_donation|date:"Y-m-d"}}" name="Date_of_donation" class="form-control" id="Date_of_donation" placeholder="Date of Donation">
+                                <input type="date" value="{{data.date_of_donation|date:"Y-m-d"}}" name="Date_of_donation" class="form-control" id="Date_of_donation" placeholder="Date of Donation">
                             </div>
                             <div class="d-flex align-items-center mb-3">
                                 <label for="last_date_of_donation" class="me-3" style="width: 150px;">Last Date of Donation</label>
-                                <input type="text" value="{{data.last_donated_date|date:"Y-m-d"}}" name="last_date_of_donation" class="form-control" id="last_date_of_donation" placeholder="Last Date of Donation">
+                                <input type="date" value="{{data.last_donated_date|date:"Y-m-d"}}" name="last_date_of_donation" class="form-control" id="last_date_of_donation" placeholder="Last Date of Donation">
                             </div>
                         </div>
                         <div class="modal-footer">

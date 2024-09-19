@@ -20,16 +20,27 @@
     .submit-button:hover {
         background-color: darkred;
     }
+    .underlined-heading {
+        text-decoration: underline;
+    }
 </style>
 <body>
     <h2>Are you willing for blood donation??</h2>
-    <h3>Patient Details</h3>
-    <p><strong>Patient Name:</strong> {{data.username}}</p>
-    <p><strong>Patient Blood Type:</strong> {{data.blood_type}}</p>
-    <p><strong>Patient Age:</strong> {{data.age}}</p>
-    <p><strong>Patient Address:</strong> {{data.address}}</p>
-    <p><strong>Patient Phone:</strong> {{data.phone}}</p>
-    <a href="http://127.0.0.1:6655/main-admin/" class="button-link">Submit</a>
+
+    <h3 class="underlined-heading">Patient Details</h3>
+    <p><strong>Donar Name:</strong> {{data_p.username}}</p>
+    <p><strong>Donar Blood Type:</strong> {{data_p.blood_type}}</p>
+    <p><strong>Donar Age:</strong> {{data_p.age}}</p>
+    <p><strong>Donar Address:</strong> {{data_p.address}}</p>
+    <p><strong>Donar Phone:</strong> {{data_p.phone}}</p>
+
+    <h3 class="underlined-heading">Donar Details</h3>
+    <p><strong>Donar Name:</strong> {{data.name}}</p>
+    <p><strong>Donar Blood Type:</strong> {{data.blood_type}}</p>
+    <p><strong>Donar Age:</strong> {{data.age}}</p>
+    <p><strong>Donar Address:</strong> {{data.address}}</p>
+    <p><strong>Donar Phone:</strong> {{data.phone}}</p>
+    <a href="http://127.0.0.1:5511/main-admin/" class="button-link">Submit</a>
 </body>
 </html>
 

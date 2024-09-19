@@ -18,8 +18,13 @@ CATEGORY_CHOICES1 = (
         ("Male", "Male"),
         ("Others","Others")
     )
+
+CHOICE = (
+        ("admin", "admin"),
+        ("patient", "patient")
+    )
 class Patient(AbstractUser):
-    
+    user_type= models.CharField(choices=CHOICE, max_length=10,null=True)
     image = models.FileField(upload_to="patient_image", null=True, db_index=True)
     blood_type= models.CharField(choices=CATEGORY_CHOICES, max_length=10)
     age= models.IntegerField(null=True, db_index=True)
@@ -58,7 +63,6 @@ class Donar(models.Model):
     age= models.IntegerField(null=True, db_index=True)
     sex= models.CharField(choices=CATEGORY_CHOICES1,max_length=100,null=True)
     email = models.CharField(max_length=200, null=True, db_index=True)
-    phone = models.BigIntegerField(null=True, db_index=True)
     address= models.TextField(null=True, db_index=True)
     blood_type= models.CharField(choices=CATEGORY_CHOICES, max_length=10,null=True)
     date_of_donation= models.DateField(null=True)

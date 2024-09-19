@@ -21,7 +21,9 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
+from helper import admin_access_only
 
 
 def admin_loginn(request):
@@ -30,6 +32,11 @@ def admin_loginn(request):
         password = request.POST.get("password")
         user = authenticate(username=username, password=password)
         if user:
+            admin_user = Patient.objects.get(username=username)
+            print('kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk',admin_user.user_type)
+            admin_user.user_type='admin'
+            admin_user.save()
+            print('kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk',admin_user.user_type)
             login(request, user)
             return redirect('homee')
         else:
@@ -37,17 +44,17 @@ def admin_loginn(request):
     return render(request,"adminn/login.html")
 
 
-@login_required(login_url='login')
+@admin_access_only()
 def basee(request):  
      return render(request,"adminn/base.html")
 
 
-@login_required(login_url='login')
+@admin_access_only()
 def homee(request):  
      return render(request,"adminn/homee.html")
 
 
-@login_required(login_url='login')
+@admin_access_only()
 def dashboardd(request):
     pat= Patient.objects.all().count()
     pat=pat-1
@@ -60,7 +67,7 @@ def dashboardd(request):
     return render(request,"adminn/dashboard.html",context)
 
 
-@login_required(login_url='login')
+@admin_access_only()
 def patientss(request):  
      patient= Patient.objects.all()
 
@@ -78,7 +85,7 @@ def patientss(request):
      return render(request,"adminn/patients.html",context)
 
 
-@login_required(login_url='login')
+@admin_access_only()
 def donarss(request):
      don= Donar.objects.all()
      paginator = Paginator(don, 3)
@@ -96,7 +103,7 @@ def donarss(request):
      return render(request,"adminn/donars.html",context)
 
 
-@login_required(login_url='login')
+@admin_access_only()
 def view_donarr(request):
     id = request.GET.get("id")
     context={}
@@ -111,8 +118,7 @@ def view_donarr(request):
     rendered_template = template.render(context, request)
     return JsonResponse({"rendered_template":rendered_template})
 
-
-@login_required(login_url='login')
+@admin_access_only()
 def create_donar(request):
     if request.method == "POST":
             
@@ -138,11 +144,18 @@ def create_donar(request):
             overall_health = request.POST.get("overall_health")
             image = request.FILES.get("image")
             last_donated_date =request.POST.get("last_date_of_donation")
-            
             d0 = datetime.strptime(date_of_donation, "%Y-%m-%d").date()
             d1 = datetime.strptime(last_donated_date, "%Y-%m-%d").date()
             delta=d0-d1
-            if (18 <= age <= 60) and (weight >= 45) and (hemoglobin >= 12) and (volume == 350) and (delta.days >=90):
+            try:
+              donar_user = Donar.objects.get(name=name)
+            except ObjectDoesNotExist:
+              donar_user = None
+            
+            phone_len=len(str(abs(phone)))
+            # email_donar=re.match(r"[^@]+@[^@]+\.[^@]+", email)
+            # print('gggggggggggggggggggggggggggggg',email_donar)
+            if (18 <= age <= 60) and (weight >= 45) and (hemoglobin >= 12) and (volume == 350) and (delta.days >=90) and (donar_user is None) and (phone_len==10):
                 don = Donar.objects.create(
                     name=name,
                     nationality=nationality,
@@ -165,27 +178,116 @@ def create_donar(request):
                 context = {'status': "success",'message': "success",}
                 return JsonResponse(context)
             
-            if age < 18 or age > 60:
-               context = {'status': "failed",'message': "age limit and between 18 and 60 is eligible",}
-               return JsonResponse(context)
+            required_fields = []
+            if phone_len!=10:
+                required_fields.append("valid phone number is required")
+            if donar_user:
+                required_fields.append("donar already exists")
             
+            if age < 18 or age > 60:
+                required_fields.append("age limit and between 18 and 60 is eligible")
             if weight < 45:
-               context = {'status': "failed",'message': "weight >= 45 is eligible",}
-               return JsonResponse(context)
+                required_fields.append("weight >= 45 is eligible")
             
             if hemoglobin < 12:
-               context = {'status': "failed",'message': "hemoglobin > 12 is eligible",}
-               return JsonResponse(context)
-            
+                required_fields.append("hemoglobin > 12 is eligible")
             if volume != 350 :
-               context = {'status': "failed",'message': "volume must be >=350 is eligible",}
-               return JsonResponse(context)
-            
+                required_fields.append("volume must be >=350 is eligible")
             if  delta.days <90:
-               context = {'status': "failed",'message': "minimum 3month gap is eligible for donation",}
-               return JsonResponse(context)
-
+                required_fields.append("minimum 3month gap is eligible for donation")
+           
+            if required_fields:
+                response = f"{', '.join(required_fields)}"
+                return JsonResponse({"message": response, "status": "failed"})
+            
     return render(request,"adminn/donars.html")
+
+# @login_required(login_url='login')
+# def create_donar(request):
+#     if request.method == "POST":
+            
+#             name = request.POST.get("name")
+#             nationality = request.POST.get("nationality")
+#             phone = request.POST.get("phone")
+#             phone=int(phone) if phone else None
+#             age = request.POST.get("age")
+#             age=int(age) if age else None
+#             sex = request.POST.get("sex")
+#             email = request.POST.get("email")
+#             address = request.POST.get("address")
+#             date_of_donation = request.POST.get("date_of_donation")
+#             blood_type = request.POST.get("blood_type")
+#             donation = request.POST.get("donation")
+#             volume = request.POST.get("volume")
+#             volume=int(volume) if volume else None
+#             hemoglobin = request.POST.get("hemoglobin")
+#             hemoglobin=int(hemoglobin)  if hemoglobin else None
+#             weight = request.POST.get("weight")
+#             weight=int(weight) if weight else None
+#             medical_history = request.POST.get("medical_history")
+#             overall_health = request.POST.get("overall_health")
+#             image = request.FILES.get("image")
+#             last_donated_date =request.POST.get("last_date_of_donation")
+#             d0 = datetime.strptime(date_of_donation, "%Y-%m-%d").date()
+#             d1 = datetime.strptime(last_donated_date, "%Y-%m-%d").date()
+#             delta=d0-d1
+#             try:
+#               donar_user = Donar.objects.get(name=name)
+#             except ObjectDoesNotExist:
+#               donar_user = None
+            
+#             phone_len=len(str(abs(phone)))
+#             print('phone_lennnnnnnnnnnnnnnnnnnnn',phone_len)
+#             if (18 <= age <= 60) and (weight >= 45) and (hemoglobin >= 12) and (volume == 350) and (delta.days >=90) and (donar_user is None) and (phone_len==10):
+#                 don = Donar.objects.create(
+#                     name=name,
+#                     nationality=nationality,
+#                     phone=phone,
+#                     age=age,
+#                     sex=sex,
+#                     address=address,
+#                     blood_type=blood_type,
+#                     date_of_donation=date_of_donation,
+#                     donation=donation,
+#                     volume=volume,
+#                     hemoglobin=hemoglobin,
+#                     last_donated_date=last_donated_date,
+#                     wieght=weight,  
+#                     email=email,
+#                     medical_history=medical_history,
+#                     overall_health=overall_health,
+#                     image=image
+#                 )  
+#                 context = {'status': "success",'message': "success",}
+#                 return JsonResponse(context)
+            
+#             if phone_len!=10:
+#                context = {'status': "failed",'message': "Enter a valid phone number"}
+#                return JsonResponse(context) 
+#             if donar_user:
+#                context = {'status': "failed",'message': "Donar exists"}
+#                return JsonResponse(context)
+#             if age < 18 or age > 60:
+#                context = {'status': "failed",'message': "age limit and between 18 and 60 is eligible",}
+#                return JsonResponse(context)
+            
+#             if weight < 45:
+#                context = {'status': "failed",'message': "weight >= 45 is eligible",}
+#                return JsonResponse(context)
+            
+#             if hemoglobin < 12:
+#                context = {'status': "failed",'message': "hemoglobin > 12 is eligible",}
+#                return JsonResponse(context)
+            
+#             if volume != 350 :
+#                context = {'status': "failed",'message': "volume must be >=350 is eligible",}
+#                return JsonResponse(context)
+            
+#             if  delta.days <90:
+#                context = {'status': "failed",'message': "minimum 3month gap is eligible for donation",}
+#                return JsonResponse(context)
+
+#     return render(request,"adminn/donars.html")
 
 @login_required(login_url='login')
 def status(request):
@@ -270,7 +372,7 @@ def status(request):
 
 
 
-@login_required(login_url='login')
+@admin_access_only()
 def edit_donar(request):
     context={}
     id = request.GET.get("id")
@@ -283,8 +385,7 @@ def edit_donar(request):
     rendered_template = template.render(context, request)
     return JsonResponse({"rendered_template":rendered_template})
 
-
-@login_required(login_url='login')  
+@admin_access_only()
 def edit_donar_actionn(request):
   if request.method == "POST":
         id=request.POST.get("donar_id")
@@ -309,7 +410,7 @@ def edit_donar_actionn(request):
             return JsonResponse({"message": "success", "status": "success"})
 
 
-@login_required(login_url='login')
+@admin_access_only()
 def logout_admin(request):
    logout(request)     
    return redirect('login') 

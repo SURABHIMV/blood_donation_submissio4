@@ -5,6 +5,7 @@ from django.template import loader
 from django.http import JsonResponse
 from django.contrib.auth import logout
 import sweetify
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required 
@@ -12,9 +13,11 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.core.mail import EmailMultiAlternatives
+from helper import patient_access_only
 # Create your views here.
 def user_signup(request):
     if request.method == "POST":
+            required_data=[]
             name = request.POST.get("name")
             blood_type = request.POST.get("blood_type")
             age = request.POST.get("age")
@@ -27,20 +30,36 @@ def user_signup(request):
             address= request.POST.get("address")
             comment= request.POST.get("comment")
             image= request.FILES.get("image")
-            don = Patient.objects.create(
-                    username=name,
-                    image=image,
-                    blood_type=blood_type,
-                    age=age,
-                    sex=sex,
-                    email=email,
-                    phone=phone,
-                    address=address,
-                    comment=comment
-                    )
-            don.set_password(password)
-            don.save()
-            return redirect('user_login')
+
+            phone_len=len(str(abs(phone)))
+            try:
+              patient_user = Patient.objects.get(username=name,phone=phone)
+            except ObjectDoesNotExist:
+              patient_user = None
+            if (patient_user is None) and (phone_len==10):
+               don = Patient.objects.create(
+                         username=name,
+                         image=image,
+                         blood_type=blood_type,
+                         age=age,
+                         sex=sex,
+                         email=email,
+                         phone=phone,
+                         address=address,
+                         comment=comment
+                         )
+               don.set_password(password)
+               don.save()
+               return redirect('user_login')
+               
+            else:
+               if phone_len!=10:
+                    required_data.append("valid phone number is required")
+               if patient_user:
+                    required_data.append("Patient already exists")
+               if required_data:
+                    sweetify.error(request, ' '.join(required_data))  
+                   
     
     return render(request,"users/signup.html")
 
@@ -53,13 +72,16 @@ def user_login(request):
             user = authenticate(username=name, password=password)
             print(user)
             if user:
+              patient_user = Patient.objects.get(username=name)
+              patient_user.user_type='patient'
+              patient_user.save()
               login(request, user)
               return redirect('home')
             else:
                sweetify.error(request, 'Enter valid username and password')     
     return render(request,"users/login.html")
 
-@login_required(login_url='user_login')
+@patient_access_only()
 def view_u(request):
     
     id = request.GET.get("id")
@@ -76,11 +98,11 @@ def view_u(request):
     rendered_template = template.render(context, request)
     return JsonResponse({"rendered_template":rendered_template})
 
-@login_required(login_url='user_login')
+@patient_access_only()
 def new_patient(request):
     return render(request,"users/home.html")
 
-@login_required(login_url='user_login')
+@patient_access_only()
 def dashboardd(request):
     user = request.user
     if user.is_authenticated:
@@ -167,7 +189,7 @@ def dashboardd(request):
         
     return render(request,"users/u_dashboard.html",context)
 
-@login_required(login_url='user_login')
+@patient_access_only()
 def add_mail(request):
      context = {}
      id = request.GET.get("id")
@@ -184,7 +206,6 @@ def add_mail(request):
      p_phone=nam.phone
      p_email=nam.email
 
-     print('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy',nam.blood_type,nam.age,nam.sex)
      if id:
          donar= Donar.objects.get(id=id)
          blood_type=donar.blood_type
@@ -196,13 +217,31 @@ def add_mail(request):
          address=donar.address
          date_of_donation=donar.date_of_donation
 
-     context['data']=nam
      from_email = "<surabhi2996@gmail.com>"
      if name and email:
             subject = "Urgent need of blood"
+            message = f"Are you willing for blood donation \n\n patient details \n\n patieint_Name: {p_name} \n patient_blood_type: {p_blood} \n patient_email:{p_email}\n patient_age: {p_sex} \n patient_address: {p_address} \n patient_phone: {p_phone}\n\n"
+            to_email = [email]
+            send_mail(subject, message, from_email, to_email)
+            messages.info(request, "Your Request Shared Successfully")
+          #   send_mail(subject, plain_message, from_email, to_email)
+
+     else:
+            messages.info(request, "something went wrong")
+     context = {'status': "success",'message': "success"}
+     from_email = "<surabhi2996@gmail.com>"
+
+     ##admin
+     context={}
+     context['data']=donar
+     context['data_p']=nam
+     admin_name="surabhi"
+     admin_email="surabhi2996@gmail.com"
+     if admin_name and admin_email:
+            subject = "Urgent need of blood"
             html_message = render_to_string('users/mail_template.html',context)
             plain_message = strip_tags(html_message)
-            to_email = [email]
+            to_email = [admin_email]
             msg = EmailMultiAlternatives(subject, plain_message, from_email, to_email)
             msg.attach_alternative(html_message, "text/html")
             msg.send()
@@ -210,26 +249,13 @@ def add_mail(request):
             messages.info(request, "Your Request Shared Successfully")
      else:
             messages.info(request, "something went wrong")
-     context = {'status': "success",'message': "success"}
-     from_email = "<surabhi2996@gmail.com>"
-     ##admin
-     admin_name="surabhi"
-     admin_email="surabhi2996@gmail.com"
-     if admin_name and admin_email:
-            subject = "Urgent need of blood"
-            message = f"Are you willing for blood donation \n\n patient details \n\n patieint_Name: {p_name} \n patient_blood_type: {p_blood} \n patient_email:{p_email}\n patient_age: {p_sex} \n patient_address: {p_address} \n patient_phone: {p_phone}\n\n donar details \n\n donar_Name: {name} \n donar_blood_type: {blood_type} \n donar_email:{email} \n donar_age: {sex} \n donar_address: {address} \n donar_phone: {phone} \n date_of_donation: {date_of_donation}"
-            to_email = [admin_email]
-            send_mail(subject, message, from_email, to_email)
-            messages.info(request, "Your Request Shared Successfully")
-     else:
-            messages.info(request, "something went wrong")
      return JsonResponse(context)
 
-@login_required(login_url='user_login')
+@patient_access_only()
 def mail(request):
     return render(request,"users/mail_template.html")
 
-@login_required(login_url='user_login')   
+@patient_access_only()
 def logout_adminn(request):
    logout(request)     
    return redirect('user_login') 
